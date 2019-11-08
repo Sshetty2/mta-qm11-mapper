@@ -1,5 +1,9 @@
 import React, {useEffect, useState, useCallback} from 'react';
+
 import GoogleMapReact from 'google-map-react';
+
+// import {Select, MenuItem} from '@material-ui/core';
+// import {makeStyles} from '@material-ui/core/styles';
 
 const Marker = ({text}) => (
 	<div
@@ -13,15 +17,29 @@ const Marker = ({text}) => (
 			justifyContent: 'center',
 			borderRadius: '100%',
 			transform: 'translate(-50%, -80%)',
-			WebkitBoxShadow:"0px 10px 13px -7px #000000, inset -23px -16px 4px -6px rgba(0,0,0,0)",
-			boxShadow:"0px 10px 13px -7px #000000, inset -23px -16px 4px -6px rgba(0,0,0,0)"
+			WebkitBoxShadow: '0px 10px 13px -7px #000000, inset -23px -16px 4px -6px rgba(0,0,0,0)',
+			boxShadow: '0px 10px 13px -7px #000000, inset -23px -16px 4px -6px rgba(0,0,0,0)'
 		}}>
 		{text}
 	</div>
 );
 
+// const useStyles = makeStyles(() => ({
+// 	selectStyle: {
+// 		bottom: '200px',
+// 		left: '200px',
+// 		fontWeight: 'bold',
+// 		textShadow: '-1px -1px 6px rgba(150, 150, 150, 1)',
+// 		color: '#446299',
+// 		fontSize: '20px'
+// 	}
+// }));
+
 function App() {
+	// const classes = useStyles();
 	const [vehicleActivity, setVehicleActivity] = useState([]);
+
+	// const [age, setAge] = useState(10);
 
 	const defaultProps = {
 		center: {
@@ -31,15 +49,13 @@ function App() {
 		zoom: 13
 	};
 
-	const line = 'Q60';
+	const line = 'MTABC_QM11';
 	const direction = '1';
 	//seconds
 	const refreshInterval = 1.5;
 
-	const fetchMtaData = async () => {
-		const response = await fetch(
-			`/api/siri/vehicle-monitoring.json?key=${process.env.REACT_APP_MTA_API_KEY}&LineRef=MTABC_Q60&DirectionRef=${direction}`
-		);
+	const fetchMtaData = async query => {
+		const response = await fetch(query);
 
 		const json = await response.json();
 
@@ -54,11 +70,21 @@ function App() {
 	};
 
 	useEffect(() => {
-		fetchMtaData();
+		// fetchMtaData(
+		// 	`/api/siri/vehicle-monitoring.json?key=${process.env.REACT_APP_MTA_API_KEY}`
+		// );
+
 		setInterval(() => {
-			fetchMtaData();
+			fetchMtaData(
+				`/api/siri/vehicle-monitoring.json?key=${process.env.REACT_APP_MTA_API_KEY}&LineRef=${line}&DirectionRef=${direction}`
+			);
 		}, refreshInterval * 1000);
 	}, []);
+
+	// const handleChange = event => {
+	// 	console.log(event.target.value);
+	// 	setAge(event.target.value);
+	// };
 
 	const renderMarkers = useCallback(
 		() =>
@@ -75,7 +101,6 @@ function App() {
 		[vehicleActivity, line]
 	);
 	return (
-		// Important! Always set the container height explicitly
 		<div style={{height: '100vh', width: '100%'}}>
 			<GoogleMapReact
 				bootstrapURLKeys={{key: `${process.env.REACT_APP_GOOGLE_API_KEY}`}}
@@ -83,6 +108,17 @@ function App() {
 				defaultZoom={defaultProps.zoom}>
 				{vehicleActivity && renderMarkers()}
 			</GoogleMapReact>
+			{/* <Select
+				className={classes.selectStyle}
+				labelId='demo-simple-select-label'
+				id='demo-simple-select'
+				value={age}
+				disableUnderline
+				onChange={handleChange}>
+				<MenuItem value={10}>Ten</MenuItem>
+				<MenuItem value={20}>Twenty</MenuItem>
+				<MenuItem value={30}>Thirty</MenuItem>
+			</Select> */}
 		</div>
 	);
 }

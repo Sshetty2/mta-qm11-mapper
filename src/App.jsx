@@ -5,11 +5,11 @@ import GoogleMapReact from 'google-map-react';
 // import {Select, MenuItem} from '@material-ui/core';
 // import {makeStyles} from '@material-ui/core/styles';
 
-const Marker = ({text}) => (
+const Marker = ({text, direction}) => (
 	<div
 		style={{
 			color: 'white',
-			background: '#e26d40',
+			background: direction === '0' ? '#e26d40' : 'green',
 			padding: '5px 5px',
 			display: 'inline-flex',
 			textAlign: 'center',
@@ -49,10 +49,11 @@ function App() {
 		zoom: 13
 	};
 
-	const line = 'MTABC_QM11';
-	const direction = '1';
+	const prefix = 'MTABC_'
+	const line = 'QM11';
+	const direction = '0';
 	//seconds
-	const refreshInterval = 1.5;
+	const refreshInterval = 15;
 
 	const fetchMtaData = async query => {
 		const response = await fetch(query);
@@ -73,11 +74,16 @@ function App() {
 		// fetchMtaData(
 		// 	`/api/siri/vehicle-monitoring.json?key=${process.env.REACT_APP_MTA_API_KEY}`
 		// );
+			fetchMtaData(
+        // `${process.env.REACT_APP_SERVER_ENDPOINT_ADDRESS}/getOneLine?line=${line}`
+        `https://bustime.mta.info/api/siri/vehicle-monitoring.json?key=91158df9-bfc7-4575-8718-c35327c901a3&LineRef=${prefix}${line}`
+      );
 
 		setInterval(() => {
 			fetchMtaData(
-				`/api/siri/vehicle-monitoring.json?key=${process.env.REACT_APP_MTA_API_KEY}&LineRef=${line}&DirectionRef=${direction}`
-			);
+        // `${process.env.REACT_APP_SERVER_ENDPOINT_ADDRESS}/getOneLine?line=${line}`
+        `https://bustime.mta.info/api/siri/vehicle-monitoring.json?key=91158df9-bfc7-4575-8718-c35327c901a3&LineRef=${prefix}${line}`
+      );
 		}, refreshInterval * 1000);
 	}, []);
 
@@ -92,11 +98,12 @@ function App() {
 				(
 					{
 						MonitoredVehicleJourney: {
-							VehicleLocation: {Latitude: latitude, Longitude: longitude}
+							VehicleLocation: {Latitude: latitude, Longitude: longitude},
+							DirectionRef: direction
 						}
 					},
 					idx
-				) => <Marker key={idx} lat={latitude} lng={longitude} text={line} />
+				) => <Marker key={idx} lat={latitude} lng={longitude} text={line} direction={direction} />
 			),
 		[vehicleActivity, line]
 	);
